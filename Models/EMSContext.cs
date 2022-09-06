@@ -8,6 +8,7 @@ namespace EMS.Models
 {
     public partial class EMSContext : DbContext
     {
+        
         public EMSContext(DbContextOptions<EMSContext> options)
             : base(options)
         {
@@ -98,10 +99,11 @@ namespace EMS.Models
                     .HasForeignKey(d => d.DepartmentId)
                     .HasConstraintName("FK_EmployeeDepartment_Department");
 
-                entity.HasOne(d => d.DepartmentNavigation)
+                entity.HasOne(d => d.Employee)
                     .WithMany(p => p.EmployeeDepartments)
-                    .HasForeignKey(d => d.DepartmentId)
-                    .HasConstraintName("FK_EmployeeDepartment_EmployeeDepartment");
+                    .HasForeignKey(d => d.EmployeeId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_EmployeeDepartment_Employee");
             });
 
             OnModelCreatingPartial(modelBuilder);

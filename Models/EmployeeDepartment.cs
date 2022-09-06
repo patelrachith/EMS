@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 #nullable disable
 
@@ -13,11 +15,6 @@ namespace EMS.Models
         public DateTime? DateOfAssignment { get; set; }
 
         public virtual Department Department { get; set; }
-        public virtual Employee DepartmentNavigation { get; set; }
-
-  /*      public List<Department> Departments { get; set; }
-        public List<Employee> Employiees { get; set; }*/
-
-        
+        public virtual Employee Employee { get; set; }
     }
 }

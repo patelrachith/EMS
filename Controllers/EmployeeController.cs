@@ -26,7 +26,7 @@ namespace EMS.Controllers
         public ActionResult Index()
         {
             var employees = _EMSContext.Employees.ToList();
-            
+
             return View(employees);
         }
 
@@ -150,6 +150,40 @@ namespace EMS.Controllers
             employeeDepartment.Departments = _EMSContext.Departments.ToList();
 
             return View(employeeDepartment);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult MapDepartment(int employeeId, int[] departmentIds)
+        {
+
+
+
+            
+
+            var employeeDepartments = _EMSContext.EmployeeDepartments.Where(ed => ed.EmployeeId == employeeId && !departmentIds.Contains(ed.DepartmentId) ).ToList();
+            if (employeeDepartments != null)
+            {
+                _EMSContext.EmployeeDepartments.RemoveRange(employeeDepartments);
+                _EMSContext.SaveChanges();
+            }
+
+            foreach (int departmentId in departmentIds)
+            {
+                bool isEmployeeDepartmentExist = _EMSContext.EmployeeDepartments.Any(ed => ed.EmployeeId == employeeId && ed.DepartmentId == departmentId);
+
+                if (!isEmployeeDepartmentExist)
+                {
+                    EmployeeDepartment employeeDepartment = new EmployeeDepartment();
+                    employeeDepartment.EmployeeId = employeeId;
+                    employeeDepartment.DepartmentId = departmentId;
+
+                    _EMSContext.Add(employeeDepartment);
+                    _EMSContext.SaveChanges();
+                }
+            }
+
+            return RedirectToAction(nameof(Index));
         }
     }
 }
