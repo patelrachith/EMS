@@ -114,18 +114,25 @@ namespace EMS.Controllers
             {
                 return NotFound();
             }
-            var employee = await _EMSContext.Employees.FirstOrDefaultAsync(m => m.EmployeeId == employeeId);
 
+            var employee = await _EMSContext.Employees.FirstOrDefaultAsync(m => m.EmployeeId == employeeId);
             if (employee == null)
             {
                 return NotFound();
             }
 
+            var employeeDepartments = _EMSContext.EmployeeDepartments.Where(ed => ed.EmployeeId == employeeId).ToList();
+            if (employeeDepartments != null)
+            {
+                _EMSContext.EmployeeDepartments.RemoveRange(employeeDepartments);
+                _EMSContext.SaveChanges();
+            }
+
+            
             _EMSContext.Employees.Remove(employee);
             await _EMSContext.SaveChangesAsync();
+            _notyfService.Success("You have successfully deleted the employee.");
             return RedirectToAction(nameof(Index));
-
-
         }
 
         // POST: Employees/Delete/1
@@ -141,13 +148,19 @@ namespace EMS.Controllers
         }
 
 
-        public ActionResult MapDepartment()
+        public ActionResult MapDepartment(int? employeeId)
         {
 
             EMS.ViewModels.EmployeeDepartment employeeDepartment = new ViewModels.EmployeeDepartment();
 
             employeeDepartment.Employiees = _EMSContext.Employees.ToList();
             employeeDepartment.Departments = _EMSContext.Departments.ToList();
+
+            if(employeeId != null)
+            {
+                var departmentIds = string.Join(",", _EMSContext.EmployeeDepartments.Where(ed => ed.EmployeeId == employeeId).Select(ed => ed.DepartmentId).ToList());
+                //employeeDepartment.DepartmentIds = String.Join(",", _EMSContext.EmployeeDepartments.Where(ed => ed.EmployeeId == employeeId).Select(ed => ed.DepartmentId));
+            }
 
             return View(employeeDepartment);
         }
@@ -157,11 +170,7 @@ namespace EMS.Controllers
         public ActionResult MapDepartment(int employeeId, int[] departmentIds)
         {
 
-
-
-            
-
-            var employeeDepartments = _EMSContext.EmployeeDepartments.Where(ed => ed.EmployeeId == employeeId && !departmentIds.Contains(ed.DepartmentId) ).ToList();
+            var employeeDepartments = _EMSContext.EmployeeDepartments.Where(ed => ed.EmployeeId == employeeId && !departmentIds.Contains(ed.DepartmentId)).ToList();
             if (employeeDepartments != null)
             {
                 _EMSContext.EmployeeDepartments.RemoveRange(employeeDepartments);
@@ -184,6 +193,23 @@ namespace EMS.Controllers
             }
 
             return RedirectToAction(nameof(Index));
+        }
+
+        [HttpGet]
+        public ActionResult UpdateDepartment(int employeeId)
+        {
+       
+
+            EMS.ViewModels.EmployeeDepartment employeeDepartment = new ViewModels.EmployeeDepartment();
+            var departmentIds = _EMSContext.EmployeeDepartments.Where(ed => ed.EmployeeId == employeeId).Select(ed => ed.DepartmentId).ToList();
+            return Json(departmentIds);
+
+
+
+            /*employeeDepartment.Employiees = _EMSContext.Employees.ToList();
+            employeeDepartment.Departments = _EMSContext.Departments.ToList();
+
+            return View(employeeDepartment);*/
         }
     }
 }
