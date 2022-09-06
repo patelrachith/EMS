@@ -8,13 +8,14 @@ namespace EMS.Models
 {
     public partial class EMSContext : DbContext
     {
-
         public EMSContext(DbContextOptions<EMSContext> options)
             : base(options)
         {
         }
 
+        public virtual DbSet<Department> Departments { get; set; }
         public virtual DbSet<Employee> Employees { get; set; }
+        public virtual DbSet<EmployeeDepartment> EmployeeDepartments { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -27,6 +28,21 @@ namespace EMS.Models
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<Department>(entity =>
+            {
+                entity.ToTable("Department");
+
+                entity.Property(e => e.DepartmentId).HasColumnName("DepartmentID");
+
+                entity.Property(e => e.Descriptions)
+                    .HasMaxLength(500)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.Name)
+                    .HasMaxLength(50)
+                    .IsUnicode(false);
+            });
+
             modelBuilder.Entity<Employee>(entity =>
             {
                 entity.ToTable("Employee");
@@ -38,11 +54,11 @@ namespace EMS.Models
                     .IsUnicode(false);
 
                 entity.Property(e => e.DOB)
-                    .HasColumnType("datetime")
+                    .HasColumnType("date")
                     .HasColumnName("DOB");
 
                 entity.Property(e => e.DOJ)
-                    .HasColumnType("datetime")
+                    .HasColumnType("date")
                     .HasColumnName("DOJ");
 
                 entity.Property(e => e.Email)
@@ -54,13 +70,38 @@ namespace EMS.Models
                     .HasMaxLength(50)
                     .IsUnicode(false);
 
-                entity.Property(e => e.LasstName)
+                entity.Property(e => e.LastName)
                     .HasMaxLength(50)
                     .IsUnicode(false);
 
                 entity.Property(e => e.Phone)
                     .HasMaxLength(10)
                     .IsFixedLength(true);
+            });
+
+            modelBuilder.Entity<EmployeeDepartment>(entity =>
+            {
+                entity.HasKey(e => e.MapId);
+
+                entity.ToTable("EmployeeDepartment");
+
+                entity.Property(e => e.MapId).HasColumnName("MapID");
+
+                entity.Property(e => e.DateOfAssignment).HasColumnType("date");
+
+                entity.Property(e => e.DepartmentId).HasColumnName("DepartmentID");
+
+                entity.Property(e => e.EmployeeId).HasColumnName("EmployeeID");
+
+                entity.HasOne(d => d.Department)
+                    .WithMany(p => p.EmployeeDepartments)
+                    .HasForeignKey(d => d.DepartmentId)
+                    .HasConstraintName("FK_EmployeeDepartment_Department");
+
+                entity.HasOne(d => d.DepartmentNavigation)
+                    .WithMany(p => p.EmployeeDepartments)
+                    .HasForeignKey(d => d.DepartmentId)
+                    .HasConstraintName("FK_EmployeeDepartment_EmployeeDepartment");
             });
 
             OnModelCreatingPartial(modelBuilder);

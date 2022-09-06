@@ -1,6 +1,9 @@
-﻿using EMS.Models;
+﻿using AspNetCoreHero.ToastNotification.Abstractions;
+using EMS.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,16 +14,19 @@ namespace EMS.Controllers
     public class EmployeeController : Controller
     {
         private readonly EMSContext _EMSContext;
+        private readonly INotyfService _notyfService;
 
-        public EmployeeController(EMSContext EMSContext)
+        public EmployeeController(EMSContext EMSContext, INotyfService notyfService)
         {
             _EMSContext = EMSContext;
+            _notyfService = notyfService;
         }
 
         // GET: EmployeeController
         public ActionResult Index()
         {
             var employees = _EMSContext.Employees.ToList();
+            
             return View(employees);
         }
 
@@ -31,66 +37,119 @@ namespace EMS.Controllers
         }
 
         // GET: EmployeeController/Create
-        public ActionResult Create()
+        public ActionResult Upsert(int? employeeId)
         {
-            return View();
+            ViewBag.PageName = employeeId == null ? "Add Employee" : "Edit Employee";
+            ViewBag.IsEdit = employeeId == null ? false : true;
+            if (employeeId == null)
+            {
+                return View();
+            }
+            else
+            {
+                var employee = _EMSContext.Employees.Find(employeeId);
+
+                if (employee == null)
+                {
+                    return NotFound();
+                }
+                return View(employee);
+            }
         }
 
         // POST: EmployeeController/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create(IFormCollection collection)
+        public ActionResult Upsert(int employeeId, Employee employeeData)
         {
-            try
+            bool IsEmployeeExist = false;
+
+            Employee employee = _EMSContext.Employees.Find(employeeId);
+
+            if (employee != null)
             {
+                IsEmployeeExist = true;
+            }
+            else
+            {
+                employee = new Employee();
+            }
+
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    employee.FirstName = employeeData.FirstName;
+                    employee.LastName = employeeData.LastName;
+                    employee.Email = employeeData.Email;
+                    employee.Address = employeeData.Address;
+                    employee.Phone = employeeData.Phone;
+                    employee.DOB = employeeData.DOB;
+                    employee.DOJ = employeeData.DOJ;
+
+                    if (IsEmployeeExist)
+                    {
+                        _EMSContext.Update(employee);
+                    }
+                    else
+                    {
+                        _EMSContext.Add(employee);
+                    }
+                    _EMSContext.SaveChanges();
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    throw;
+                }
+                _notyfService.Success("You have successfully saved the data.");
                 return RedirectToAction(nameof(Index));
             }
-            catch
-            {
-                return View();
-            }
+            return View(employeeData);
         }
 
-        // GET: EmployeeController/Edit/5
-        public ActionResult Edit(int id)
+        // GET: Employees/Delete/1
+        public async Task<IActionResult> Delete(int? employeeId)
         {
-            return View();
+            if (employeeId == null)
+            {
+                return NotFound();
+            }
+            var employee = await _EMSContext.Employees.FirstOrDefaultAsync(m => m.EmployeeId == employeeId);
+
+            if (employee == null)
+            {
+                return NotFound();
+            }
+
+            _EMSContext.Employees.Remove(employee);
+            await _EMSContext.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
+
+
         }
 
-        // POST: EmployeeController/Edit/5
+        // POST: Employees/Delete/1
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, IFormCollection collection)
+        public async Task<IActionResult> Delete(int employeeId)
         {
-            try
-            {
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
+            var employee = await _EMSContext.Employees.FindAsync(employeeId);
+            _EMSContext.Employees.Remove(employee);
+            await _EMSContext.SaveChangesAsync();
+
+            return RedirectToAction(nameof(Index));
         }
 
-        // GET: EmployeeController/Delete/5
-        public ActionResult Delete(int id)
-        {
-            return View();
-        }
 
-        // POST: EmployeeController/Delete/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id, IFormCollection collection)
+        public ActionResult MapDepartment()
         {
-            try
-            {
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
+
+            EMS.ViewModels.EmployeeDepartment employeeDepartment = new ViewModels.EmployeeDepartment();
+
+            employeeDepartment.Employiees = _EMSContext.Employees.ToList();
+            employeeDepartment.Departments = _EMSContext.Departments.ToList();
+
+            return View(employeeDepartment);
         }
     }
 }
