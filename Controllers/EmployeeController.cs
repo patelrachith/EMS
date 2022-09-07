@@ -29,6 +29,13 @@ namespace EMS.Controllers
 
             return View(employees);
         }
+        public ActionResult SearchEmployee(string searchText)
+        {
+            var employees = _EMSContext.Employees.Where(e => e.FirstName.Contains(searchText)).ToList();
+
+            return Json(employees);
+            //return View(employees);
+        }
 
         // GET: EmployeeController/Details/5
         public ActionResult Details(int id)
@@ -159,7 +166,7 @@ namespace EMS.Controllers
             if(employeeId != null)
             {
                 var departmentIds = string.Join(",", _EMSContext.EmployeeDepartments.Where(ed => ed.EmployeeId == employeeId).Select(ed => ed.DepartmentId).ToList());
-                //employeeDepartment.DepartmentIds = String.Join(",", _EMSContext.EmployeeDepartments.Where(ed => ed.EmployeeId == employeeId).Select(ed => ed.DepartmentId));
+                employeeDepartment.DepartmentIds = _EMSContext.EmployeeDepartments.Where(ed => ed.EmployeeId == employeeId).Select(ed => ed.DepartmentId).ToArray();
             }
 
             return View(employeeDepartment);

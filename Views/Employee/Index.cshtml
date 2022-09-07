@@ -9,7 +9,11 @@
 <h1>Employee List</h1>
 
 <p style="text-align:right;margin-right:20px;">
-    <a class="btn btn-primary" asp-action="Upsert">Add employee</a>
+    <div class="row">
+        <div class="col-sm-6 text-left"><input type="text" id="searchText" class="form-control" placeholder="Search employee"/></div>
+        <div class="col-sm-3 text-left"><a class="btn btn-primary" onclick="SearchEmployee();">Search</a></div>
+        <div class="col-sm-3 text-right"><a class="btn btn-primary" asp-action="Upsert">Add employee</a></div>
+    </div>
 </p>
 <div class="table-responsive">
     <table class="table">
@@ -80,3 +84,20 @@
         </tbody>
     </table>
 </div>
+
+<script>
+    function SearchEmployee() {
+
+        var searchText = $("#searchText").val();
+        $.ajax({
+            url: '/Employee/SearchEmployee',
+            type: "GET",
+            dataType: "JSON",
+            data: { searchText: searchText },
+            success: function (searchResult) {
+                alert(searchResult);
+            }
+        });
+       
+    }
+</script>
