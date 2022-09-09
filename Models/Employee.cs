@@ -24,7 +24,6 @@ namespace EMS.Models
         [DataType(DataType.EmailAddress)]
         [RegularExpression("[a-z0-9._%+-]+@[a-z0-9.-]+.[a-z]{2,4}", ErrorMessage = "Incorrect Email Format")]
         public string Email { get; set; }
-        [RegularExpression(@"^\(?([0-9]{2})[-. ]?([0-9]{4})[-. ]?([0-9]{3})[-. ]?([0-9]{3})$", ErrorMessage = "Not a valid Phone number")]
         public string Phone { get; set; }
         [Required]
         [Display(Name = "Date of Birth")]

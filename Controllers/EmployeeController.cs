@@ -25,17 +25,53 @@ namespace EMS.Controllers
         // GET: EmployeeController
         public ActionResult Index()
         {
-            var employees = _EMSContext.Employees.ToList();
 
+            var employees = _EMSContext.Employees.ToList();
             return View(employees);
+        }
+        [HttpPost]
+        public ActionResult Index(string searchText)
+        {
+
+            if (string.IsNullOrEmpty(searchText))
+            {
+                var employees = _EMSContext.Employees.ToList();
+                return View(employees);
+            }
+            else
+            {
+                var employees = _EMSContext.Employees.Where(e => e.FirstName.Contains(searchText) 
+                                                                || e.LastName.Contains(searchText)
+                                                                || e.Address.Contains(searchText)
+                                                                || e.Email.Contains(searchText)
+                                                                || e.Phone.Contains(searchText)).ToList();
+                return View(employees);
+            }
+
+
         }
         public ActionResult SearchEmployee(string searchText)
         {
             var employees = _EMSContext.Employees.Where(e => e.FirstName.Contains(searchText)).ToList();
 
-            return Json(employees);
+            ModelState.Clear();
+            return RedirectToAction("Index", new
+            {
+                searchText = searchText
+            });
+
+            //return Json(employees);
             //return View(employees);
         }
+
+        public ActionResult GetDepartment(int employeeId)
+        {
+            var employeeDepartments = _EMSContext.EmployeeDepartments.Where(e => e.EmployeeId == employeeId).ToList();
+
+            return Json(employeeDepartments);
+        }
+
+        
 
         // GET: EmployeeController/Details/5
         public ActionResult Details(int id)
@@ -135,7 +171,7 @@ namespace EMS.Controllers
                 _EMSContext.SaveChanges();
             }
 
-            
+
             _EMSContext.Employees.Remove(employee);
             await _EMSContext.SaveChangesAsync();
             _notyfService.Success("You have successfully deleted the employee.");
@@ -163,7 +199,7 @@ namespace EMS.Controllers
             employeeDepartment.Employiees = _EMSContext.Employees.ToList();
             employeeDepartment.Departments = _EMSContext.Departments.ToList();
 
-            if(employeeId != null)
+            if (employeeId != null)
             {
                 var departmentIds = string.Join(",", _EMSContext.EmployeeDepartments.Where(ed => ed.EmployeeId == employeeId).Select(ed => ed.DepartmentId).ToList());
                 employeeDepartment.DepartmentIds = _EMSContext.EmployeeDepartments.Where(ed => ed.EmployeeId == employeeId).Select(ed => ed.DepartmentId).ToArray();
@@ -205,8 +241,6 @@ namespace EMS.Controllers
         [HttpGet]
         public ActionResult UpdateDepartment(int employeeId)
         {
-       
-
             EMS.ViewModels.EmployeeDepartment employeeDepartment = new ViewModels.EmployeeDepartment();
             var departmentIds = _EMSContext.EmployeeDepartments.Where(ed => ed.EmployeeId == employeeId).Select(ed => ed.DepartmentId).ToList();
             return Json(departmentIds);

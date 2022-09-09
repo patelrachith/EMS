@@ -8,17 +8,29 @@
 
 <h1>Employee List</h1>
 
-<p style="text-align:right;margin-right:20px;">
-    <div class="row">
-        <div class="col-sm-6 text-left"><input type="text" id="searchText" class="form-control" placeholder="Search employee"/></div>
-        <div class="col-sm-3 text-left"><a class="btn btn-primary" onclick="SearchEmployee();">Search</a></div>
-        <div class="col-sm-3 text-right"><a class="btn btn-primary" asp-action="Upsert">Add employee</a></div>
+
+<div class="row pb-2">
+    <div class="col-sm-6 text-left">
+        <form method="post">
+            <div class="row">
+                <div class="col-sm-9 text-right">
+                    <input type="text" id="searchText" name="searchText" class="form-control" placeholder="Search employee" />
+                </div>
+                <div class="col-sm-3 text-right">
+                    <input class="btn btn-primary" type="submit" value="Search" />
+                </div>
+            </div>
+        </form>
     </div>
-</p>
+    <div class="col-sm-6 text-right"><a class="btn btn-primary" asp-action="Upsert">Add employee</a></div>
+
+</div>
+
 <div class="table-responsive">
     <table class="table">
         <thead>
             <tr>
+                <th></th>
                 <th>
                     @Html.DisplayNameFor(model => model.FirstName)
                 </th>
@@ -45,7 +57,11 @@
         <tbody>
             @foreach (var item in Model)
             {
-                <tr>
+                <tr data-toggle="toggle">
+                    <td>
+                        <span class="plusminus">+</span>
+                        @Html.HiddenFor(modelItem => item.EmployeeId, new { @id = "EmployeeId" })
+                    </td>
                     <td>
                         @Html.DisplayFor(modelItem => item.FirstName)
                     </td>
@@ -65,20 +81,22 @@
                         @Html.ValueFor(modelItem => item.DOJ, "{0:dd/MM/yyyy}")
                     </td>
                     <td class="text-center">
-                        
+
                         <a asp-action="Upsert" class="btn btn-primary" asp-route-employeeId="@item.EmployeeId" title="Edit">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
                                 <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z" />
                                 <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z" />
                             </svg>
                         </a>
-                        <a asp-action="Delete" class="btn btn-danger" asp-route-employeeId="@item.EmployeeId" title="Delete" onclick = "return confirm('Are you sure you want to delete employee?')">
+                        <a asp-action="Delete" class="btn btn-danger" asp-route-employeeId="@item.EmployeeId" title="Delete" onclick="return confirm('Are you sure you want to delete employee?')">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
                                 <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z" />
                                 <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z" />
                             </svg>
                         </a>
                     </td>
+                </tr>
+                <tr class="departmentRow">
                 </tr>
             }
         </tbody>
@@ -89,6 +107,7 @@
     function SearchEmployee() {
 
         var searchText = $("#searchText").val();
+        alert('call Search');
         $.ajax({
             url: '/Employee/SearchEmployee',
             type: "GET",
@@ -98,6 +117,61 @@
                 alert(searchResult);
             }
         });
-       
+
     }
 </script>
+
+<script type="text/javascript">
+
+    function ExpandRow(obj) {
+        alert('call expandrow');
+        $(obj).closest("tr").after("<tr><td></td><td colspan = '999'>" + $(this).next().html() + "</td></tr>");
+        $(obj).attr("src", "/images/minus.png");
+    }
+    //Assign Click event to Plus Image.
+    $("body").on("click", "img[src*='plus.png']", function () {
+        alert('call');
+        $(this).closest("tr").after("<tr><td></td><td colspan = '999'>" + $(this).next().html() + "</td></tr>");
+        $(this).attr("src", "/images/minus.png");
+    });
+    //Assign Click event to Minus Image.
+    $("body").on("click", "img[src*='minus.png']", function () {
+        $(this).attr("src", "/images/plus.png");
+        $(this).closest("tr").next().remove();
+    });
+</script>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('.departmentRow').slideUp(60);
+        $('[data-toggle="toggle"]').click(function () {
+
+            var employeeID = $(this).find("#EmployeeId").val();
+            //alert('EmployeeId - ' + employeeID);
+
+            $.ajax({
+                url: '/Employee/GetDepartment',
+                type: "GET",
+                dataType: "JSON",
+                data: { employeeId: employeeID },
+                success: function (departmentList) {
+                    //alert(departmentList);
+                }
+            });
+
+            if ($(this).next(".departmentRow").is(':visible')) {
+                $(this).next('.departmentRow').slideUp(60);
+                $(".plusminus").text('+');
+                $(this).css('background-color', 'white');
+            }
+            else {
+                $(this).next('.departmentRow').slideDown(60);
+
+                $(this).next('.departmentRow').html("<td colspan='8'><table class= 'table'> <tr><td>Department Name</td><td>Description</td></tr><tr><td>HR</td><td>Human Resource</td></tr></table ></td >");
+                $(this).find(".plusminus").text('- ');
+                $(this).css('background-color', '#c1eaff ');
+            }
+        });
+    });
+</script>  
