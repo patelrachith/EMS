@@ -45,18 +45,8 @@
 
 <script>
     function UpdateDepartment(obj) {
-        debugger;
         var employeeID = obj.value;
 
-        
-        //alert(departments.length);
-        //alert(departments[2].value);
-        //departments[2].prop("selected", true);
-        //$('#DepartmentIds option[value="1"]').attr('selected', 'selected');
-
-        //departments.each(function (key, value) {
-        //    alert(value);
-        //});
         $.ajax({
             url: '/Employee/UpdateDepartment',
             type: "GET",

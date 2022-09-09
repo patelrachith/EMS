@@ -244,13 +244,6 @@ namespace EMS.Controllers
             EMS.ViewModels.EmployeeDepartment employeeDepartment = new ViewModels.EmployeeDepartment();
             var departmentIds = _EMSContext.EmployeeDepartments.Where(ed => ed.EmployeeId == employeeId).Select(ed => ed.DepartmentId).ToList();
             return Json(departmentIds);
-
-
-
-            /*employeeDepartment.Employiees = _EMSContext.Employees.ToList();
-            employeeDepartment.Departments = _EMSContext.Departments.ToList();
-
-            return View(employeeDepartment);*/
         }
     }
 }
